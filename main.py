@@ -45,33 +45,46 @@ original_deck = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K",
              "A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K",
              "A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K",
              ]
-card_deck=shuffle_deck(original_deck)
+card_deck = shuffle_deck(original_deck).copy()
+money = 100
 clear_screen()
 print(logo)
 print("Welcome to the Little Personal casino!")
 print("Here fun gets a little personal!")
 print("")
-new_round=True
+new_round = True
 while new_round:
 
     # If deck is low on cards, reshuffle.
-    if len(card_deck)<10:
+    if len(card_deck)<12:
         print("Reshuffling cards...")
         time.sleep(2)
-        card_deck=shuffle_deck(original_deck)
+        card_deck = shuffle_deck(original_deck).copy()
 
     # Draw 2 cars each, show cards.
+    winner = ""
     player_hand = []
     dealer_hand = []
     draw_cards(player_hand, card_deck, 2)
     draw_cards(dealer_hand, card_deck, 2)
     print(f"Player's hand: {player_hand}")
     print(f"Dealer's hand: [*, {dealer_hand[1]}]")
-    winner = ""
     keep_dealing = True
 
-    # Check if anyone has already won.
+    # Place bet
+    bet=0
+    while bet<1 or bet>money:
+        print(f"You have ${money}.")
+        bet=int(input("Place your bet: $"))
 
+    # Check if anyone has already won.
+    dealer_total=count_hand(dealer_hand)
+    player_total=count_hand(player_hand)
+    if dealer_total==21 or player_total==21:
+        keep_dealing=False
+
+    print(original_deck)
+    print(card_deck)
     # Ask if they want more cards.
     while keep_dealing:
         deal_new_card = ""
@@ -111,15 +124,21 @@ while new_round:
     match winner:
         case "player":
             print("You win!")
+            money+=bet
         case "dealer":
             print("Dealer wins!")
+            money-=bet
 
-    ask_new_round=""
-    while ask_new_round != "y" and ask_new_round != "n":
-        ask_new_round=input("Play another round? (y/n) ").lower()
-    if ask_new_round=="n":
+    if money==0:
+        print("You have lost all your money... Try again another time!")
         new_round=False
-        print("Ok, see you soon!")
     else:
-        clear_screen()
+        ask_new_round=""
+        while ask_new_round != "y" and ask_new_round != "n":
+            ask_new_round=input("Play another round? (y/n) ").lower()
+        if ask_new_round=="n":
+            new_round=False
+            print(f"You're leaving with ${money}. See you soon!")
+        else:
+            clear_screen()
 
