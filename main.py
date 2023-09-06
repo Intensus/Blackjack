@@ -74,8 +74,13 @@ while new_round:
     # Place bet
     bet=0
     while bet<1 or bet>money:
-        print(f"You have ${money}.")
-        bet=int(input("Place your bet: $"))
+        correct_bet = False
+        while not correct_bet:
+            print(f"You have ${money}.")
+            bet=input("Place your bet: $")
+            if bet.isnumeric():
+                correct_bet = True
+                bet=int(bet)
 
     # Check if anyone has already won.
     dealer_total=count_hand(dealer_hand)
