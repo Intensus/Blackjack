@@ -20,15 +20,12 @@ def draw_cards(hand, deck, n):
 
 def count_hand(hand):
     total = 0
-    aces: int = 0
+    aces = 0
     for card in hand:
         match card:
             case "A":
-                if aces == 0:
-                    total += 11
-                    aces = 1
-                else:
-                    total += 1
+                # Count the aces, but do not add them to total yet, due to their ambiguity.
+                aces += 1
             case "J":
                 total += 10
             case "Q":
@@ -37,6 +34,11 @@ def count_hand(hand):
                 total += 10
             case other:
                 total += card
+    if aces>0:
+        sum_aces = aces - 1 + 11
+        if sum_aces+total > 21:
+            sum_aces = aces * 1
+        total += sum_aces
     return total
 
 
@@ -45,6 +47,7 @@ original_deck = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K",
              "A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K",
              "A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K",
              ]
+
 card_deck = shuffle_deck(original_deck).copy()
 money = 100
 clear_screen()
@@ -61,16 +64,6 @@ while new_round:
         time.sleep(2)
         card_deck = shuffle_deck(original_deck).copy()
 
-    # Draw 2 cars each, show cards.
-    winner = ""
-    player_hand = []
-    dealer_hand = []
-    draw_cards(player_hand, card_deck, 2)
-    draw_cards(dealer_hand, card_deck, 2)
-    print(f"Player's hand: {player_hand}")
-    print(f"Dealer's hand: [*, {dealer_hand[1]}]")
-    keep_dealing = True
-
     # Place bet
     bet=0
     while bet<1 or bet>money:
@@ -82,14 +75,22 @@ while new_round:
                 correct_bet = True
                 bet=int(bet)
 
+    # Draw 2 cars each, show cards.
+    winner = ""
+    player_hand = []
+    dealer_hand = []
+    draw_cards(player_hand, card_deck, 2)
+    draw_cards(dealer_hand, card_deck, 2)
+    print(f"Player's hand: {player_hand}")
+    print(f"Dealer's hand: [*, {dealer_hand[1]}]")
+    keep_dealing = True
+
     # Check if anyone has already won.
     dealer_total=count_hand(dealer_hand)
     player_total=count_hand(player_hand)
     if dealer_total==21 or player_total==21:
         keep_dealing=False
 
-    print(original_deck)
-    print(card_deck)
     # Ask if they want more cards.
     while keep_dealing:
         deal_new_card = ""
@@ -113,13 +114,15 @@ while new_round:
     player_total = count_hand(player_hand)
     dealer_total = count_hand(dealer_hand)
     if winner != "dealer":
-        while dealer_total < player_total and dealer_total < 22:
+        while dealer_total < 17 and dealer_total < 22:
             draw_cards(dealer_hand, card_deck, 1)
             dealer_total = count_hand(dealer_hand)
             print(f"Dealer's hand: {dealer_hand}")
             time.sleep(2)
-        if dealer_total < 22 and not dealer_total < player_total:
+        if dealer_total < 22 and dealer_total > player_total:
             winner="dealer"
+        elif dealer_total == player_total:
+            winner="draw"
         else:
             winner="player"
 
@@ -133,6 +136,8 @@ while new_round:
         case "dealer":
             print("Dealer wins!")
             money-=bet
+        case "draw":
+            print("It's a draw!")
 
     if money==0:
         print("You have lost all your money... Try again another time!")
